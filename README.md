@@ -2,12 +2,12 @@
 
 ## Stomp Cinema Books
 
-##Descripción
+## Descripción
 
 Este ejercicio se basa en la documentación oficial de SpringBoot, para el manejo de WebSockets con STOMP.
 En este repositorio se encuentra una aplicación SpringBoot que está configurado como Broker de mensajes, de forma similar a lo mostrado en la siguiente figura:
 
-![](1.png)
+![](img/1.png)
 
 En este caso, el manejador de mensajes asociado a "/app" aún no está configurado, pero sí lo está el broker '/topic'. Como mensaje, se usarán localizaciones de pantalla, pues se espera que esta aplicación permita propagar eventos de compra de asientos seleccionando en el canvas el asiento deseado. Este proyecto parte como continuación a el proyecto de compra/reserva de tickets.
 
@@ -15,7 +15,7 @@ En este caso, el manejador de mensajes asociado a "/app" aún no está configura
 
 Para las partes I y II, usted va a implementar una herramienta que permita integrarse al proyecto de el proyecto de compra/reserva de tickets, basada en el siguiente diagrama de actividades:
 
-![](Activity.png)
+![](img/Activity.png)
 
 Para esto, realice lo siguiente:
 
@@ -93,7 +93,7 @@ git commit -m "PARTE 3".
 
 Para la parte IV, usted va a implementar una versión extendida del modelo de actividades y eventos anterior, en la que el servidor (que hasta ahora sólo fungía como Broker o MOM -Message Oriented Middleware-) se volverá también suscriptor de ciertos eventos, para a partir de los mismos agregar la funcionalidad de 'compra/reserva de entradas de cine':
 
-![](2.png)
+![](img/2.png)
 
 Para esto, se va a hacer una configuración alterna en la que, en lugar de que se propaguen los mensajes 'buyticket.{cinemaName}.{functionDate}.{movieName}' entre todos los clientes, éstos sean recibidos y procesados primero por el servidor, de manera que se pueda decidir qué hacer con los mismos.
 
