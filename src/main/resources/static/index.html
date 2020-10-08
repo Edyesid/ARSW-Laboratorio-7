@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<body background="fondo.gif"></body>>
+	<title>Cinema bookings</title>
+	
+	<!-- ccs only -->
+	<link rel="stylesheet" type="text/css" href="css/style.css">	
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Patua+One&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+	<!--"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"-->
+
+    <script src="js/app.js"></script>
+    <script src="js/apimock.js"></script>
+
+	<style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Cinema</title>
+</head>
+<body>
+	  <div class="cabecera">
+        <h1>Cinema Bookings</h1>
+      </div>
+	<div class="divprincipal" align="left">
+		<label for="cinema">
+			<h2>cinema</h2>
+		</label> <input type="text" id="cinema" value="cinemaX" placeholder="Name" />
+		 
+		<label for="fecha">Date</label>
+		<input type="text" id="fecha" value="2018-12-19"
+			placeholder="Name">
+
+		<button id="get"
+			onclick="app.getFuctionsByNameData(cinema.value, fecha.value)">GetFunctions</button>
+
+		<div>
+			<h2>
+				Cinema Selected:
+				<div id="cinemaSelected"></div>
+			</h2>
+
+			<h2>
+				Movies:
+				<table id="idtable" class="table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Genre</th>
+							<th>Hour</th>
+							<th>Availability</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</h2>
+		</div>
+
+		<h1 id = "newfunction"></h1>
+		<div id="inputnombre"></div>
+		<div id="inputgenero"></div>
+		<div id="inputhora"></div>
+		<div id="createid"></div>
+
+	</div>
+
+	<div id = "divcanvas1" class="divCanvas">
+		<h1 id = "availabilityh1"></h1>
+		<h1 id="availability"></h1>
+		<div id="divcanvas"></div>
+		<h2 id = "number"></h2>
+		<h2 id="chairs"></h2>
+
+		<div id = "divcuadrado" class="cuadrado">
+
+			<h2 id = "admon"></h2>
+
+			<div id="editfunction"></div>
+
+			<label for="editfunction"><h2 id="editText"></h2></label>
+
+			<div id="saveupdate"></div>
+
+			<div id="cfunction"></div>
+
+			<div id="dfunction"></div>
+
+		</div>
+
+		<div class = cuadrado>
+			<h1 id = "hbuyticket"></h1>
+			<div id="inputrow"></div>
+			<div id="inputcol"></div>
+			<div id="buttonBuy"></div>
+		</div>
+	</div>
+</body>
+</html>
