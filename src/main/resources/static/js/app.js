@@ -45,7 +45,8 @@ var app = (function() {
         }
     };
 
-    var connectAndSubscribe = function () {
+    var connectAndSubscribe = function (callback) {
+
         console.info('Connecting to WS...');
         var socket = new SockJS('/stompendpoint');
         stompClient = Stomp.over(socket);
@@ -54,11 +55,19 @@ var app = (function() {
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
             stompClient.subscribe('/topic/buyticket', function (eventbody) {
-               alert("evento recibido");
-               var theObject=JSON.parse(eventbody.body);
+               //alert("evento recibido");
+               //var theObject=JSON.parse(eventbody.body);
+               callback(eventbody);
             });
         });
     };
+
+    var changeSeat = function(eventbody) {
+        var theObject = JSON.parse(eventbody.body);
+        console.info(theObject);
+        Listseats[theObject.row][theObject.col] = false;
+        drawSeats();
+    }
 
 	var getfuctionsByNameData = function(cinema, fecha) {
 		console.log(cinema);
@@ -262,7 +271,7 @@ var app = (function() {
 	}
 
      var drawSeats = function (cinemaFunction) {
-            var c = document.getElementById("myCanvas");
+            var c = document.getElementById("myCanvas2");
             var ctx = c.getContext("2d");
             ctx.fillStyle = "#001933";
             ctx.fillRect(100, 20, 300, 80);
@@ -287,6 +296,29 @@ var app = (function() {
                 row++;
             }
         };
+
+    var getMousePosition = function (evt) {
+        var xrow;
+        var ycol;
+        $('#myCanvas2').click(function (e) {
+            var rect = myCanvas2.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            console.info(x);
+            console.info(y);
+            for (var i = 0; i < Listseats.length; i++) {
+                for (var j = 0; j < Listseats[i].length; j++) {
+                    if ((j*40)+20 <= x && x <= (j*40)+40 && (i*40)+120 <= y && y <= (i*40)+140) {
+                        console.log("x encontrada" + i);
+                        console.log("y encontrada" + j);
+                        xrow = i;
+                        ycol = j;
+                    }
+                }
+            }
+            verifyAvailability(xrow,ycol);
+        });
+    };
 
 	return {
 		getFuctionsByNameData: function (cinema, fecha) {
@@ -368,7 +400,8 @@ var app = (function() {
             var can = document.getElementById("canvas");
             drawSeats();
             //websocket connection
-            connectAndSubscribe();
+            connectAndSubscribe(changeSeat);
+            getMousePosition();
         },
 
         disconnect: function () {
