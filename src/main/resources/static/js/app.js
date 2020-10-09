@@ -1,5 +1,7 @@
 var app = (function() {
 
+    var Listseats = [[true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true]];
+
 	var cinema_;
 
 	var fecha_;
@@ -7,7 +9,9 @@ var app = (function() {
 	var listFunctions_;
 
 	var actualFunction;
-	
+
+	var stompClient = null;
+
 	var cliente = "js/apiclient.js";
 
 	var setcinema = function(cinema) {
@@ -21,6 +25,40 @@ var app = (function() {
 	var setFunction = function (newfuncion) {
 		actualFunction = newfuncion;
 	}
+
+    class Seat {
+        constructor(row, col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    var verifyAvailability = function (row,col) {
+        var st = new Seat(row, col);
+        if (Listseats[row][col]===true){
+            Listseats[row][col]=false;
+            console.info("purchased ticket");
+            stompClient.send("/topic/buyticket", {}, JSON.stringify(st));
+        }
+        else{
+            console.info("Ticket not available");
+        }
+    };
+
+    var connectAndSubscribe = function () {
+        console.info('Connecting to WS...');
+        var socket = new SockJS('/stompendpoint');
+        stompClient = Stomp.over(socket);
+
+        //subscribe to /topic/TOPICXX when connections succeed
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/buyticket', function (eventbody) {
+               alert("evento recibido");
+               var theObject=JSON.parse(eventbody.body);
+            });
+        });
+    };
 
 	var getfuctionsByNameData = function(cinema, fecha) {
 		console.log(cinema);
@@ -223,6 +261,33 @@ var app = (function() {
 		return value;
 	}
 
+     var drawSeats = function (cinemaFunction) {
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            ctx.fillStyle = "#001933";
+            ctx.fillRect(100, 20, 300, 80);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "40px Arial";
+            ctx.fillText("Screen", 180, 70);
+            var row = 5;
+            var col = 0;
+            for (var i = 0; i < Listseats.length; i++) {
+                row++;
+                col = 0;
+                for (j = 0; j < Listseats[i].length; j++) {
+                    if (Listseats[i][j]) {
+                        ctx.fillStyle = "#009900";
+                    } else {
+                        ctx.fillStyle = "#FF0000";
+                    }
+                    col++;
+                    ctx.fillRect(20 * col, 20 * row, 20, 20);
+                    col++;
+                }
+                row++;
+            }
+        };
+
 	return {
 		getFuctionsByNameData: function (cinema, fecha) {
 			setcinema(cinema);
@@ -294,8 +359,26 @@ var app = (function() {
 			deleteFunction(data);
 		},
 		putBuyTicket : function () {
-			putBuyTicket();
-		}
+		    //putBuyTicket();
+		    var row = $("#editrow").val();
+            var col = $("#editcol").val();
+            verifyAvailability(row,col);
+		},
+        init: function () {
+            var can = document.getElementById("canvas");
+            drawSeats();
+            //websocket connection
+            connectAndSubscribe();
+        },
+
+        disconnect: function () {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            setConnected(false);
+            console.log("Disconnected");
+        }
+
 	}
 
 })();
