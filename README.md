@@ -97,6 +97,8 @@ Ajuste la aplicación anterior para que pueda manejar la compra de asientos en m
 
 3. De la misma manera, haga que las publicaciones se realicen al tópico asociado al identificador ingresado por el usuario.
 
+![](img/parte3.png)
+
 4. Rectifique que se puedan realizar dos compras de asientos de forma independiente, cada uno de éstos entre dos o más clientes.
 
 ```

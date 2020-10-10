@@ -12,6 +12,8 @@ var app = (function() {
 
 	var stompClient = null;
 
+	var identificador_;
+
 	var cliente = "js/apiclient.js";
 
 	var setcinema = function(cinema) {
@@ -33,19 +35,34 @@ var app = (function() {
         }
     }
 
+    var init = function () {
+
+        var can = document.getElementById("canvas");
+        console.log(cinema_)
+        console.log(actualFunction.movie.name);
+        console.log(actualFunction.date);
+        identificador_ = "." + actualFunction.cinema + "." +  actualFunction.date + "." + actualFunction.movie.name;
+
+        drawSeats();
+        //websocket connection
+        connectAndSubscribe(identificador_, changeSeat);
+    }
+
     var verifyAvailability = function (row,col) {
         var st = new Seat(row, col);
         if (Listseats[row][col]===true){
             Listseats[row][col]=false;
             console.info("purchased ticket");
-            stompClient.send("/topic/buyticket", {}, JSON.stringify(st));
+            stompClient.send("/topic/buyticket", + identificador_, {}, JSON.stringify(st));
+            drawSeats();
         }
         else{
             console.info("Ticket not available");
+            console.log(Listseats);
         }
     };
 
-    var connectAndSubscribe = function (callback) {
+    var connectAndSubscribe = function (identificador,callback) {
 
         console.info('Connecting to WS...');
         var socket = new SockJS('/stompendpoint');
@@ -54,7 +71,7 @@ var app = (function() {
         //subscribe to /topic/TOPICXX when connections succeed
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/buyticket', function (eventbody) {
+            stompClient.subscribe('/topic/buyticket' + identificador, function (eventbody) {
                //alert("evento recibido");
                //var theObject=JSON.parse(eventbody.body);
                callback(eventbody);
@@ -65,8 +82,8 @@ var app = (function() {
     var changeSeat = function(eventbody) {
         var theObject = JSON.parse(eventbody.body);
         console.info(theObject);
-        Listseats[theObject.row][theObject.col] = false;
-        drawSeats();
+        //Listseats[theObject.row][theObject.col] = false;
+        //drawSeats();
     }
 
 	var getfuctionsByNameData = function(cinema, fecha) {
@@ -110,6 +127,7 @@ var app = (function() {
     }
     function seats(funcion) {
 		setFunction(funcion);
+		init();
 		$("#divcanvas").empty();
 		$("#divcanvas").append("<canvas id=\"myCanvas\" width=\"510\" height=\"300\" style=\"border: 3px solid #000000;\"></canvas>");
     	var lugares = funcion.seats;
@@ -295,11 +313,13 @@ var app = (function() {
                 }
                 row++;
             }
+            getMousePosition();
         };
 
     var getMousePosition = function (evt) {
-        var xrow;
-        var ycol;
+        console.log("entro getmouse");
+        var xrow = null;
+        var ycol = null;
         $('#myCanvas2').click(function (e) {
             var rect = myCanvas2.getBoundingClientRect();
             var x = e.clientX - rect.left;
@@ -313,10 +333,10 @@ var app = (function() {
                         console.log("y encontrada" + j);
                         xrow = i;
                         ycol = j;
+                        verifyAvailability(xrow,ycol);
                     }
                 }
             }
-            verifyAvailability(xrow,ycol);
         });
     };
 
@@ -394,15 +414,7 @@ var app = (function() {
 		    //putBuyTicket();
 		    var row = $("#editrow").val();
             var col = $("#editcol").val();
-            verifyAvailability(row,col);
 		},
-        init: function () {
-            var can = document.getElementById("canvas");
-            drawSeats();
-            //websocket connection
-            connectAndSubscribe(changeSeat);
-            getMousePosition();
-        },
 
         disconnect: function () {
             if (stompClient !== null) {
@@ -411,7 +423,6 @@ var app = (function() {
             setConnected(false);
             console.log("Disconnected");
         }
-
 	}
 
 })();
