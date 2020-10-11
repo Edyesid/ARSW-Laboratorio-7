@@ -1,5 +1,7 @@
 # ARSW - Laboratorio - 7
 
+## Edwin Yesid Rodriguez Maldonado - Guillermo Esteban Bernal Bonilla
+
 ## Stomp Cinema Books
 
 ## Descripción
@@ -156,6 +158,8 @@ public class STOMPMessagesHandler {
 	
 
 4. A partir de los diagramas dados en el archivo ASTAH incluido, haga un nuevo diagrama de actividades correspondiente a lo realizado hasta este punto, teniendo en cuenta el detalle de que ahora se tendrán tópicos dinámicos para manejar diferentes salas simultáneamente y que desde el servidor se centraliza la información de las asientos de las salas.
+
+![diagrama](https://user-images.githubusercontent.com/54051399/95673482-75776880-0b6e-11eb-9148-774cc1ac95d9.png)
 
 5. Haga commit de lo realizado.
 
