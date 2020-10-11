@@ -1,19 +1,11 @@
 var app = (function() {
 
-    var Listseats = [[true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true], [true, true, true, true, true, true, true, true, true, true, true, true]];
-
 	var cinema_;
-
 	var fecha_;
-	
 	var listFunctions_;
-
 	var actualFunction;
-
 	var stompClient = null;
-
 	var identificador_;
-
 	var cliente = "js/apiclient.js";
 
 	var setcinema = function(cinema) {
@@ -35,34 +27,25 @@ var app = (function() {
         }
     }
 
-    var init = function () {
-
-        var can = document.getElementById("canvas");
-        console.log(cinema_)
-        console.log(actualFunction.movie.name);
-        console.log(actualFunction.date);
-        identificador_ = "." + actualFunction.cinema + "." +  actualFunction.date + "." + actualFunction.movie.name;
-
-        drawSeats();
-        //websocket connection
-        connectAndSubscribe(identificador_, changeSeat);
+    var init = function (mvname) {
+        identificador_ = "." + cinema_ + "." +  fecha_ + "." + mvname;
+        connectAndSubscribe(getSeat(mvname));
     }
 
     var verifyAvailability = function (row,col) {
         var st = new Seat(row, col);
-        if (Listseats[row][col]===true){
-            Listseats[row][col]=false;
+        if (actualFunction.seats[row][col]===true) {
+            putBuyTicket(row,col);
+            actualFunction.seats[row][col]=false;
             console.info("purchased ticket");
             stompClient.send("/topic/buyticket", + identificador_, {}, JSON.stringify(st));
-            drawSeats();
         }
         else{
             console.info("Ticket not available");
-            console.log(Listseats);
         }
     };
 
-    var connectAndSubscribe = function (identificador,callback) {
+    var connectAndSubscribe = function (callback) {
 
         console.info('Connecting to WS...');
         var socket = new SockJS('/stompendpoint');
@@ -71,20 +54,13 @@ var app = (function() {
         //subscribe to /topic/TOPICXX when connections succeed
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/buyticket' + identificador, function (eventbody) {
-               //alert("evento recibido");
-               //var theObject=JSON.parse(eventbody.body);
-               callback(eventbody);
+            stompClient.subscribe('/topic/buyticket' + identificador_, function (eventbody) {
+               var theObject=JSON.parse(eventbody.body);
+               callback();
             });
         });
     };
 
-    var changeSeat = function(eventbody) {
-        var theObject = JSON.parse(eventbody.body);
-        console.info(theObject);
-        //Listseats[theObject.row][theObject.col] = false;
-        //drawSeats();
-    }
 
 	var getfuctionsByNameData = function(cinema, fecha) {
 		console.log(cinema);
@@ -111,10 +87,10 @@ var app = (function() {
     	for (i = 0; i < listFunctions_.length; i++) {
     		console.log(listFunctions_[i]);
     		$("#idtable > tbody").append(
-    				'<tr><td>' + listFunctions_[i].name + '</td>' + 
-    				'<td>' + listFunctions_[i].genre + '</td>' + 
-    				'<td>' + listFunctions_[i].hour + '</td>' + 
-    				'<td>' + "<button onclick = 'app.getSeat(\"" + listFunctions_[i].name +"\")'>Open Seats</button>" + '</td></tr>');
+    				'<tr><td>' + listFunctions_[i].name + '</td>' +
+    				'<td>' + listFunctions_[i].genre + '</td>' +
+    				'<td>' + listFunctions_[i].hour + '</td>' +
+    				'<td>' + "<button onclick = 'app.getSeat(\"" + listFunctions_[i].name +"\"),app.connectInit(\"" + listFunctions_[i].name +"\")'>Open Seats</button>" + '</td></tr>');
     		}
     }
     
@@ -127,51 +103,44 @@ var app = (function() {
     }
     function seats(funcion) {
 		setFunction(funcion);
-		init();
 		$("#divcanvas").empty();
-		$("#divcanvas").append("<canvas id=\"myCanvas\" width=\"510\" height=\"300\" style=\"border: 3px solid #000000;\"></canvas>");
+		$("#divcanvas").append("<canvas id=\"myCanvas\" width=\"500\" height=\"400\" style=\"border: 1px solid #000000;\"></canvas>");
     	var lugares = funcion.seats;
     	var sillas = lugares.length * lugares[0].length;
     	var c = document.getElementById("myCanvas");
 		var ctx = c.getContext("2d");
-		var img = new Image();
-		var img2 = new Image();
-		img.src = "imagenes/azul.png";
-		img2.src = "imagenes/roja.png";
-		img.onload = function() {
-			img2.onload = function() {
-				for (i = 0; i < lugares.length; i++) {
-					for (j = 0; j < lugares[i].length; j++) {
-						if (lugares[i][j]) {
-							var a = (j * 40) + 25;
-							var b = (i * 35) + 30;
-							ctx.drawImage(img, a, b);
-						} else {
-							sillas = sillas - 1;
-							var c = (j * 40) + 25;
-							var d = (i * 35) + 30;
-							ctx.drawImage(img2, c, d);
-						}
-					}
-				}
-			}
-		}
+		ctx.fillStyle = "#001933";
+        ctx.fillRect(100, 20, 300, 80);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "40px Arial";
+        ctx.fillText("Screen", 180, 70);
+        var row = 5;
+        var col = 0;
+        for (var i = 0; i < lugares.length; i++) {
+            row++;
+            col = 0;
+            for (j = 0; j < lugares[i].length; j++) {
+                if (lugares[i][j]) {
+                    ctx.fillStyle = "#009900";
+                } else {
+                    ctx.fillStyle = "#FF0000";
+                }
+                col++;
+                ctx.fillRect(20 * col, 20 * row, 20, 20);
+                col++;
+            }
+            row++;
+        }
+
 		$("#number").text("Number of available chairs:");
     	$("#chairs").text(sillas);
 
 		$("#hbuyticket").empty();
-		$("#inputrow").empty();
-		$("#inputcol").empty();
 		$("#buttonBuy").empty();
 
-		var input1 = '<input type="text" id="editrow" placeholder="row"/>'
-		var input2 = '<input type="text" id="editcol" placeholder="column"/>'
-		var boton3 = '<button id="buttonBuyTicket" onClick = "app.putBuyTicket()">Buy</button>'
-
+		var boton3 = '<button id="buttonBuyTicket" onClick = "app.getMousePosition()">Buy</button>'
 
 		$("#hbuyticket").append("Buy Ticket");
-		$("#inputrow").append(input1);
-		$("#inputcol").append(input2);
 		$("#buttonBuy").append(boton3);
 
     }
@@ -196,9 +165,8 @@ var app = (function() {
     	$("#cfunction").append(boton2);
     	$("#dfunction").append(boton3);
     }
-	function putBuyTicket() {
-		var row = $("#editrow").val();
-		var col = $("#editcol").val();
+	function putBuyTicket(row,col) {
+
 		var value = $.ajax({
 			url: "http://localhost:8080/cinemas/" + cinema_ + "/" + fecha_ + "/" + actualFunction.movie.name  + "/" + row + "/" + col,
 			type: 'PUT',
@@ -207,6 +175,7 @@ var app = (function() {
 			function () {
 				console.log("OK");
 				getfuctionsByNameData(cinema_, fecha_)
+				getSeat(actualFunction.movie.name);
 			},
 			function (e) {
 
@@ -288,46 +257,18 @@ var app = (function() {
 		return value;
 	}
 
-     var drawSeats = function (cinemaFunction) {
-            var c = document.getElementById("myCanvas2");
-            var ctx = c.getContext("2d");
-            ctx.fillStyle = "#001933";
-            ctx.fillRect(100, 20, 300, 80);
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "40px Arial";
-            ctx.fillText("Screen", 180, 70);
-            var row = 5;
-            var col = 0;
-            for (var i = 0; i < Listseats.length; i++) {
-                row++;
-                col = 0;
-                for (j = 0; j < Listseats[i].length; j++) {
-                    if (Listseats[i][j]) {
-                        ctx.fillStyle = "#009900";
-                    } else {
-                        ctx.fillStyle = "#FF0000";
-                    }
-                    col++;
-                    ctx.fillRect(20 * col, 20 * row, 20, 20);
-                    col++;
-                }
-                row++;
-            }
-            getMousePosition();
-        };
-
     var getMousePosition = function (evt) {
         console.log("entro getmouse");
         var xrow = null;
         var ycol = null;
-        $('#myCanvas2').click(function (e) {
-            var rect = myCanvas2.getBoundingClientRect();
+        $('#myCanvas').click(function (e) {
+            var rect = myCanvas.getBoundingClientRect();
             var x = e.clientX - rect.left;
             var y = e.clientY - rect.top;
             console.info(x);
             console.info(y);
-            for (var i = 0; i < Listseats.length; i++) {
-                for (var j = 0; j < Listseats[i].length; j++) {
+            for (var i = 0; i < actualFunction.seats.length; i++) {
+                for (var j = 0; j < actualFunction.seats[i].length; j++) {
                     if ((j*40)+20 <= x && x <= (j*40)+40 && (i*40)+120 <= y && y <= (i*40)+140) {
                         console.log("x encontrada" + i);
                         console.log("y encontrada" + j);
@@ -340,6 +281,23 @@ var app = (function() {
         });
     };
 
+    function callbackSubscribe(mvname) {
+            console.log("entro callbacksubscribe");
+            $.getScript(cliente, function () {
+                client.getfuncion(cinema_, fecha_, mvname, redraw);
+            });
+    }
+
+
+    function getSeat(mvname) {
+        console.log(mvname);
+        $.getScript(cliente, function () {
+            client.getfuncion(cinema_, fecha_, mvname, seats);
+        });
+        favailability(mvname);
+        administrator(mvname);
+    }
+
 	return {
 		getFuctionsByNameData: function (cinema, fecha) {
 			setcinema(cinema);
@@ -348,13 +306,13 @@ var app = (function() {
 		},
 
 		getSeat: function (mvname) {
-			console.log(mvname);
-			$.getScript(cliente, function () {
-				client.getfuncion(cinema_, fecha_, mvname, seats);
-			});
-			favailability(mvname);
-			administrator(mvname);
+		    getSeat(mvname);
 		},
+
+		connectInit: function(mvname) {
+		    init(mvname);
+		},
+
 		createNewFunction : function () {
 			clearCanvas();
 			$("#newfunction").empty();
@@ -410,11 +368,6 @@ var app = (function() {
 			console.log(data);
 			deleteFunction(data);
 		},
-		putBuyTicket : function () {
-		    //putBuyTicket();
-		    var row = $("#editrow").val();
-            var col = $("#editcol").val();
-		},
 
         disconnect: function () {
             if (stompClient !== null) {
@@ -422,7 +375,9 @@ var app = (function() {
             }
             setConnected(false);
             console.log("Disconnected");
+        },
+        getMousePosition: function () {
+            getMousePosition();
         }
 	}
-
 })();
